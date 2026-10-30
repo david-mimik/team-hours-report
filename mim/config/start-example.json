@@ -1,0 +1,28 @@
+{
+  "name": "team-hours-report",
+  "image": "team-hours-report-v1",
+  "env": {
+    "MCM.BASE_API_PATH": "/team-hours-report/v1",
+    "MCM.API_ALIAS": "true",
+    "MCM.MAX_EXECUTION_TIME_SEC": "300",
+    "INFERENCE_BASE_URI": "/mimik-airouter/openai/v1/chat/completions",
+    "INFERENCE_API_KEY": "1234",
+    "INFERENCE_MODEL": "Qwen3.5-4B-Q8_0",
+    "THINKING_MODE": "off",
+    "MAX_TOKENS": "2000",
+    "WRITE_API_KEY": "",
+    "JIRA_BASE_URL": "",
+    "JIRA_EMAIL": "",
+    "JIRA_API_TOKEN": "",
+    "TEMPO_BASE_URL": "https://api.tempo.io/4",
+    "TEMPO_API_TOKEN": "",
+    "TEAM_PROJECTS": "ZR",
+    "TEAM_EXTRA_WORKLOGS": "",
+    "TEAM_HISTORY_MONTHS": "24",
+    "CHAT_ENGINE": "claude",
+    "MUSTER_URL": "http://127.0.0.1:5191",
+    "MUSTER_API_KEY": "",
+    "CLAUDE_MODEL": "",
+    "GATEWAY_SERVER_ID": "team-hours-report"
+  }
+}

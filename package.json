@@ -1,0 +1,13 @@
+{
+  "name": "team-hours-report",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Generative UI report: a CopilotKit front end and an AG-UI agent, shipped together as one mim on mimOE.",
+  "scripts": {
+    "install:all": "npm --prefix web install && npm --prefix mim install",
+    "dev": "npm --prefix web run dev",
+    "build": "npm --prefix web run build && npm --prefix mim run build && npm --prefix mim run package",
+    "deploy": "npm run build && ./mim/scripts/deploy.sh --redeploy",
+    "undeploy": "./mim/scripts/deploy.sh --remove"
+  }
+}

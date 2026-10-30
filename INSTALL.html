@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>team-hours-report Setup</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --panel: #ffffff; --fg: #1b1f2a; --muted: #5b6475; --line: #e3e6ee;
+    --accent: #2f5bd3; --accent-tint: #e8eefc; --warn: #8a5a00; --warn-tint: #fdf3d6; --ok: #1f7a45; --ok-tint: #e3f4ea; --code-bg: #f1f3f8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151c; --panel: #1b1f29; --fg: #e8eaf0; --muted: #9aa3b5; --line: #2c3240;
+      --accent: #8eaaf5; --accent-tint: #1f2a44; --warn: #f2cd74; --warn-tint: #3a3018; --ok: #6fd39b; --ok-tint: #16301f; --code-bg: #232836;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12151c; --panel: #1b1f29; --fg: #e8eaf0; --muted: #9aa3b5; --line: #2c3240;
+    --accent: #8eaaf5; --accent-tint: #1f2a44; --warn: #f2cd74; --warn-tint: #3a3018; --ok: #6fd39b; --ok-tint: #16301f; --code-bg: #232836;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 36px 16px 64px; }
+  h1 { font-size: 28px; line-height: 1.25; margin: 0 0 4px; }
+  .lead { color: var(--muted); margin: 0 0 18px; }
+  h2 { font-size: 20px; margin: 0 0 8px; display: flex; align-items: center; gap: 10px; scroll-margin-top: 70px; }
+  h3 { font-size: 16px; margin: 18px 0 6px; }
+  .n { flex: none; display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 14px; font-weight: 700; }
+  .opt { font-size: 12px; font-weight: 600; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; margin: 0 0 16px; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 8px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  a { color: var(--accent); }
+  code { font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg); border-radius: 5px; padding: 1px 5px; }
+  pre { position: relative; margin: 10px 0; background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; font-size: 13.5px; white-space: pre; }
+  pre .c { color: var(--muted); }
+  .out { border-style: dashed; }
+  .out::before { content: "You should see"; display: block; font: 600 11px/1 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 8px; }
+  .copy { position: absolute; top: 8px; right: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); border-radius: 7px; font: 600 12px/1 system-ui, sans-serif; padding: 6px 8px; cursor: pointer; }
+  .copy:hover { color: var(--fg); border-color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  th { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .note, .warn, .ok { border-radius: 10px; padding: 10px 14px; margin: 10px 0; font-size: 15px; }
+  .note { background: var(--accent-tint); }
+  .warn { background: var(--warn-tint); }
+  .ok { background: var(--ok-tint); }
+  .warn b:first-child, .note b:first-child, .ok b:first-child { margin-right: 4px; }
+  nav.toc { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 14px; margin: 0 0 18px; }
+  nav.toc a { text-decoration: none; }
+  .bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 0; margin-bottom: 8px; background: var(--bg); }
+  .seg { display: inline-flex; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
+  .seg button { border: 0; background: transparent; color: var(--muted); font: 600 14px/1 system-ui, sans-serif; padding: 8px 14px; border-radius: 7px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+  .bar span { color: var(--muted); font-size: 14px; }
+  body[data-os="mac"] .win, body[data-os="win"] .mac { display: none; }
+  .tag { display: inline-block; font: 700 11px/1 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .05em; border-radius: 6px; padding: 4px 6px; margin-right: 6px; vertical-align: 2px; background: var(--accent-tint); color: var(--accent); }
+  .diagram { font: 13px/1.5 ui-monospace, Menlo, Consolas, monospace; }
+  footer { color: var(--muted); font-size: 13px; margin-top: 24px; }
+  @media print { .bar, .copy { display: none !important; } body[data-os] .win, body[data-os] .mac { display: block !important; } section { break-inside: avoid; } }
+</style>
+</head>
+<body data-os="mac">
+<main>
+  <h1>Install team-hours-report on mimOE</h1>
+  <p class="lead">For IT and developers · Windows or macOS · about 30 minutes. team-hours-report is one mim on mimOE with two pages:
+    <b>Team Time</b> (exact hours from Tempo, by person, week and SDLC phase) and the <b>Report builder</b> (ask in a chat; Claude
+    builds dashboards with burndown, velocity, flow and more). It only <b>reads</b> Jira and Tempo.</p>
+
+  <div class="bar" role="group" aria-label="Your computer">
+    <span>Your computer:</span>
+    <div class="seg"><button type="button" data-os="win" aria-pressed="false">Windows</button><button type="button" data-os="mac" aria-pressed="true">macOS</button></div>
+  </div>
+
+  <nav class="toc" aria-label="Steps">
+    <a href="#before">0 · Before you start</a><a href="#tools">1 · Tools</a><a href="#tokens">2 · Tokens</a><a href="#configure">3 · Configure</a>
+    <a href="#deploy">4 · Build and deploy</a><a href="#claude">5 · Connect Claude</a><a href="#open">6 · Open and check</a>
+    <a href="#update">Update · remove</a><a href="#trouble">Troubleshooting</a>
+  </nav>
+
+  <section id="before">
+    <h2><span class="n">0</span>Before you start</h2>
+    <p>What runs where:</p>
+<pre class="diagram"><code>Browser ──▶ mimOE node (localhost:8083)
+             └─ team-hours-report mim  /api/team-hours-report/v1/
+                 ├─ Team Time + Report builder pages
+                 ├─ reads Jira and Tempo (Atlassian Cloud), keeps a copy of the worklogs
+                 └─ /mcp tools ◀── MCP gateway ◀── Muster ◀── Claude Code</code></pre>
+    <table>
+      <tr><th>You need</th><th>Why</th></tr>
+      <tr><td>mimOE, installed with <b>mimOE Studio</b> and running in <b>External</b> mode</td><td>The runtime the report runs on (step 1)</td></tr>
+      <tr><td>Node.js 22 LTS</td><td>Builds the page and the mim</td></tr>
+      <tr class="win"><td>Git for Windows (Git Bash)</td><td>The build and deploy scripts are Bash scripts: on Windows every command in this guide runs in <b>Git Bash</b></td></tr>
+      <tr><td>Access to Jira project <b>ZR</b> on mimiktech.atlassian.net, and to Tempo</td><td>The data (step 2)</td></tr>
+      <tr><td>The <code>team-hours-report</code> folder</td><td>This project, with <code>web/</code> and <code>mim/</code> inside</td></tr>
+      <tr><td><b>Team Advisor</b> with its <b>Claude Code engine</b>, and Claude Code signed in</td><td>The chat of the Report builder (step 5). Team Time works without it.</td></tr>
+    </table>
+  </section>
+
+  <section id="tools">
+    <h2><span class="n">1</span>Install the tools</h2>
+    <h3>mimOE</h3>
+    <ol>
+      <li>Download <b>mimOE Studio</b> from <a href="https://mimoestudio.mimik.com/features/install.html">mimoestudio.mimik.com</a>: accept the agreement, choose <span class="win">Windows</span><span class="mac">macOS</span>, download and run the installer.</li>
+      <li>Open mimOE Studio and click <b>Install Runtime</b>. When it asks how mimOE runs, choose <b>External</b> (the report connects to mimOE on <code>localhost:8083</code>), then <b>Connect</b>.</li>
+      <li>Studio's <b>Overview</b> means mimOE is running. The runtime writes the node's keys to <code>.mimoe/mimoe-api-key.env</code> in your home folder<span class="win"> (<code>C:\Users\&lt;you&gt;\.mimoe\</code>)</span><span class="mac"> (<code>~/.mimoe/</code>)</span>; the deploy script reads them from there.</li>
+    </ol>
+    <h3>Node.js<span class="win"> and Git Bash</span></h3>
+    <div class="win">
+      <ol>
+        <li>Install <b>Node.js 22 LTS</b> from <a href="https://nodejs.org">nodejs.org</a> (Windows Installer, .msi, default options).</li>
+        <li>Install <b>Git for Windows</b> from <a href="https://git-scm.com/download/win">git-scm.com</a> (default options). It includes <b>Git Bash</b>.</li>
+        <li>Open <b>Git Bash</b> from the Start menu. Use it for every command below.</li>
+      </ol>
+      <p class="warn"><b>Use Git Bash, not PowerShell or Command Prompt.</b> <code>npm run deploy</code> does not work from them: run the commands exactly as written here, in Git Bash.</p>
+    </div>
+    <div class="mac">
+      <ol>
+        <li>Install <b>Node.js 22 LTS</b> from <a href="https://nodejs.org">nodejs.org</a> (macOS Installer, .pkg), or with Homebrew: <code>brew install node@22</code>.</li>
+        <li>Open <b>Terminal</b> (Applications → Utilities). Use it for every command below.</li>
+      </ol>
+    </div>
+    <p>Check:</p>
+<pre><code>node -v      <span class="c"># v22.12 or newer</span>
+curl -s -o /dev/null -w "mimOE answers: %{http_code}\n" http://localhost:8083/mcm/v1/mims</code></pre>
+<pre class="out"><code>v22.x.x
+mimOE answers: 403</code></pre>
+    <p>A <code>403</code> (or <code>401</code>) is right here: mimOE is answering and asks for its key. <code>000</code> means mimOE is not running: start it from mimOE Studio.</p>
+  </section>
+
+  <section id="tokens">
+    <h2><span class="n">2</span>Create two tokens</h2>
+    <ul>
+      <li><b>Atlassian API token</b>: <a href="https://id.atlassian.com/manage-profile/security/api-tokens">id.atlassian.com → Security → API tokens</a> → <b>Create API token</b>.</li>
+      <li><b>Tempo token</b>: in Jira, <b>Apps → Tempo → Settings → API Integration → New token</b>.</li>
+    </ul>
+    <p class="warn"><b>Tokens act as you.</b> Never email them, paste them in a chat or commit them. They stay in <code>.env</code> on this computer and in the mim's settings on this node; the browser never sees them.</p>
+  </section>
+
+  <section id="configure">
+    <h2><span class="n">3</span>Configure</h2>
+    <p>In <span class="win">Git Bash</span><span class="mac">Terminal</span>, go to the project and create your settings file:</p>
+<pre class="win"><code>cd /c/Users/&lt;you&gt;/team-hours-report      <span class="c"># where you put the folder; C:\ is /c/ in Git Bash</span>
+cp .env.example .env
+notepad .env</code></pre>
+<pre class="mac"><code>cd ~/team-hours-report                     <span class="c"># where you put the folder</span>
+cp .env.example .env
+open -e .env</code></pre>
+    <p>Fill in these three, save and close:</p>
+    <table>
+      <tr><th>Setting</th><th>Value</th></tr>
+      <tr><td><code>JIRA_EMAIL</code></td><td>Your Atlassian login, e.g. <code>you@mimik.com</code></td></tr>
+      <tr><td><code>JIRA_API_TOKEN</code></td><td>The Atlassian token from step 2</td></tr>
+      <tr><td><code>TEMPO_API_TOKEN</code></td><td>The Tempo token from step 2</td></tr>
+    </table>
+    <p>The rest is ready for the Zoara team: project <code>ZR</code>, BES worklogs by Hassan Hasan Qadri, 24 months of history,
+      Claude Sonnet for the chat. <code>MUSTER_API_KEY</code> is filled in at step 5.</p>
+    <p>Then install the dependencies (about 2 minutes):</p>
+<pre><code>npm run install:all</code></pre>
+  </section>
+
+  <section id="deploy">
+    <h2><span class="n">4</span>Build and deploy</h2>
+    <p>This builds the page and the mim, deploys the mim on mimOE and uploads the page into it (about 2 minutes):</p>
+<pre><code>npm run build
+bash mim/scripts/deploy.sh --redeploy</code></pre>
+<pre class="out"><code>Docker image package created successfully!
+upload deploy/team-hours-report-v1-0.1.0.tar
+deploy team-hours-report
+healthcheck: {"status":"ok","info":{…,"apiRoot":"/api/team-hours-report/v1",…
+uploaded 368 page files
+report UI:   http://localhost:8083/api/team-hours-report/v1/</code></pre>
+    <p class="note"><b>First time:</b> lines like <code>remove mim …</code> only appear when an older copy was there. Redeploying is safe: it replaces the mim and empties its copy of the worklogs, which the report reads again by itself (about 20 seconds).</p>
+  </section>
+
+  <section id="claude">
+    <h2><span class="n">5</span>Connect Claude <span class="opt">for the Report builder chat</span></h2>
+    <p>The chat runs on <b>Claude Code</b> with your own Claude login, the same way Team Advisor does it: through <b>Muster</b>,
+      Team Advisor's Claude Code engine, which mimOE's MCP gateway runs. Skip this step if you only need Team Time.</p>
+    <ol>
+      <li>Install <b>Team Advisor</b> and run its <b>Setup</b> once, so the <b>Claude Code engine</b> row shows ✓ (see the Team Advisor install guide). Sign in to Claude Code if it asks.</li>
+      <li>Check that Muster answers:
+<pre><code>curl -s http://127.0.0.1:5191/agent/v1/healthcheck</code></pre>
+<pre class="out"><code>{"status":"ok"}</code></pre></li>
+      <li>Copy Muster's key into <code>.env</code> (the command does not show it):
+<pre><code>node -e "const fs=require('fs'),os=require('os'),p=require('path');const k=((JSON.parse(fs.readFileSync(p.join(os.homedir(),'.mimoe','mcp-gateway.json'),'utf8')).mcpServers.muster||{}).env||{}).MUSTER_API_KEY;if(!k){console.log('Muster has no key: run Team Advisor Setup');process.exit(1)}const e=fs.readFileSync('.env','utf8');fs.writeFileSync('.env',/^MUSTER_API_KEY=.*$/m.test(e)?e.replace(/^MUSTER_API_KEY=.*$/m,'MUSTER_API_KEY='+k):e+'\nMUSTER_API_KEY='+k+'\n');console.log('MUSTER_API_KEY saved in .env')"</code></pre></li>
+      <li>Deploy again so the mim gets the key, then give Claude the report's tools: this registers the mim in the MCP gateway and adds it to Muster's gateway key.
+<pre><code>bash mim/scripts/deploy.sh --redeploy
+node mim/scripts/claude-setup.cjs</code></pre>
+<pre class="out"><code>claude: MCP server team-hours-report registered (/api/team-hours-report/v1/mcp)
+claude: granted team-hours-report to Muster's gateway key</code></pre></li>
+    </ol>
+    <p class="note"><b>No Team Advisor?</b> Set <code>CHAT_ENGINE=local</code> in <code>.env</code> and deploy again: the chat then uses the node's local model (<code>Qwen3.5-4B-Q8_0</code>, which must be in mimOE's model store). It is slower and handles fewer charts per answer.</p>
+  </section>
+
+  <section id="open">
+    <h2><span class="n">6</span>Open the report and check it</h2>
+    <ol>
+      <li>Open <a href="http://localhost:8083/api/team-hours-report/v1/team-time.html">http://localhost:8083/api/team-hours-report/v1/team-time.html</a>.
+        The first time it says there is no data yet: click <b>Sync now</b> (about 20 seconds).</li>
+      <li>Team Time opens on <b>Hours</b>: the last 3 months by week, with total hours, people and average per person, each compared with the previous period.</li>
+      <li>Click <b>← Report builder</b> (or open <a href="http://localhost:8083/api/team-hours-report/v1/">http://localhost:8083/api/team-hours-report/v1/</a>), then <b>Sprint dashboard</b>.
+        Claude builds KPIs, burndown, burnup, tasks by status and tickets per person in about 25 seconds.</li>
+    </ol>
+    <p class="ok"><b>Done when:</b> Team Time shows the green line <i>“Rows, columns and the total add up exactly and match Tempo to the minute”</i>, and the Sprint dashboard fills the canvas.</p>
+    <p>Bookmark both pages. Anyone on this computer can open them; to share with others, see <i>Keep it private</i> below.</p>
+    <h3>Keep it private</h3>
+    <ul>
+      <li>The pages show per-person hours. They are served by mimOE on this computer (<code>localhost</code>).</li>
+      <li>To protect writes (page upload, sync, datasets), set <code>WRITE_API_KEY</code> in <code>.env</code> before deploying; scripts then send it as <code>Authorization: Bearer &lt;key&gt;</code>.</li>
+    </ul>
+  </section>
+
+  <section id="update">
+    <h2>Update or remove</h2>
+    <h3>Update to a new version of the folder</h3>
+<pre><code>npm run install:all
+npm run build
+bash mim/scripts/deploy.sh --redeploy
+node mim/scripts/claude-setup.cjs      <span class="c"># if you did step 5</span></code></pre>
+    <p>Your <code>.env</code> is kept. Open Team Time once and click <b>Sync from Tempo</b> (or just ask the chat: it syncs by itself).</p>
+    <h3>Remove</h3>
+<pre><code>node mim/scripts/claude-setup.cjs --remove   <span class="c"># if you did step 5: removes the gateway server and Muster's grant</span>
+bash mim/scripts/deploy.sh --remove</code></pre>
+    <p>Then delete the folder. Revoke the Atlassian and Tempo tokens if nobody else uses them.</p>
+  </section>
+
+  <section id="trouble">
+    <h2>Troubleshooting</h2>
+    <table>
+      <tr><th>You see</th><th>Do this</th></tr>
+      <tr class="win"><td><code>'.' is not recognized</code> or <code>deploy.sh</code> opens in an editor</td><td>You are in PowerShell or Command Prompt. Open <b>Git Bash</b> and run <code>bash mim/scripts/deploy.sh --redeploy</code>.</td></tr>
+      <tr><td><code>No MCM_API_KEY (looked in ~/.mimoe/mimoe-api-key.env)</code></td><td>mimOE's runtime is not installed for this user: run <b>Install Runtime</b> in mimOE Studio (step 1).</td></tr>
+      <tr><td>Vite says <i>requires Node.js 20.19+ or 22.12+</i></td><td>Install Node.js 22 LTS (step 1), open a new <span class="win">Git Bash</span><span class="mac">Terminal</span> window and run step 3 again from <code>npm run install:all</code>.</td></tr>
+      <tr><td><code>healthcheck:</code> is empty, or the page does not open</td><td>mimOE is not running: start it from mimOE Studio, wait a minute, deploy again.</td></tr>
+      <tr><td>Team Time: <i>Sync failed: Jira … (401)</i> or <i>Tempo … (401)</i></td><td>Wrong email or token in <code>.env</code> (check for spaces). Fix it, then <code>bash mim/scripts/deploy.sh --redeploy</code>.</td></tr>
+      <tr><td>Team Time: <i>Jira is not configured</i></td><td><code>.env</code> was not filled in before deploying: fill it (step 3) and deploy again.</td></tr>
+      <tr><td>Chat: <i>Muster (Claude Code) did not answer</i></td><td>Muster is not running: run Team Advisor <b>Setup</b> (Claude Code engine row) and check step 5.2.</td></tr>
+      <tr><td>Chat: <i>Muster answered 401</i></td><td>Muster's key is missing or changed: repeat step 5.3 and 5.4.</td></tr>
+      <tr><td>Claude answers but adds no charts, or says it has no report tools</td><td>Run <code>node mim/scripts/claude-setup.cjs</code> (it also refreshes the tools after every deploy).</td></tr>
+      <tr><td>The first chat answer after a deploy takes 20 seconds longer</td><td>Normal: the report reads Tempo and Jira again once after each deploy.</td></tr>
+    </table>
+  </section>
+
+  <footer>team-hours-report 0.1.0 · Team Time and Report builder on mimOE · Jira and Tempo are read only. Settings: <code>.env.example</code>. Architecture and commands: <code>README.md</code>.</footer>
+</main>
+<script>
+  // Windows / macOS switch: guesses from the browser, remembered in this browser
+  const pick = (os) => {
+    document.body.dataset.os = os;
+    document.querySelectorAll('.seg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.os === os)));
+    try { localStorage.setItem('team-hours-install-os', os); } catch (e) { /* storage unavailable */ }
+  };
+  let saved = null;
+  try { saved = localStorage.getItem('team-hours-install-os'); } catch (e) { /* storage unavailable */ }
+  pick(saved || (/Win/i.test(navigator.userAgent) ? 'win' : 'mac'));
+  document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => pick(b.dataset.os)));
+  // a Copy button on every command block (not on expected output)
+  document.querySelectorAll('pre:not(.out):not(.diagram)').forEach((pre) => {
+    const b = document.createElement('button');
+    b.className = 'copy'; b.type = 'button'; b.textContent = 'Copy';
+    b.addEventListener('click', () => {
+      const text = pre.querySelector('code').innerText.split('\n').map((l) => l.replace(/\s+#.*$/, '')).join('\n').trim();
+      (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => { b.textContent = 'Copied'; setTimeout(() => { b.textContent = 'Copy'; }, 1200); }, () => { b.textContent = 'Select and copy'; });
+    });
+    pre.appendChild(b);
+  });
+</script>
+</body>
+</html>

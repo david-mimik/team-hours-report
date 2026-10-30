@@ -1,0 +1,96 @@
+@host = http://localhost:8083
+@base = {{host}}/api/team-hours-report/v1
+@inferenceApiKey = {{$dotenv INFERENCE_API_KEY}}
+@writeApiKey = {{$dotenv WRITE_API_KEY}}
+
+### Models in the model store (INFERENCE_MODEL must be one of them; see the mim-dev skill for provisioning)
+GET {{host}}/mimik-ai/store/v1/models
+Authorization: Bearer {{inferenceApiKey}}
+
+### Healthcheck
+GET {{base}}/healthcheck
+
+### Report page (open {{base}}/ in a browser)
+GET {{base}}/
+
+### List datasets
+GET {{base}}/datasets
+
+### Create / replace a dataset
+PUT {{base}}/datasets/q3-pipeline
+Authorization: Bearer {{writeApiKey}}
+Content-Type: application/json
+
+{
+  "title": "Q3 pipeline by stage",
+  "description": "Open opportunities by sales stage",
+  "rows": [
+    { "stage": "Lead", "deals": 42, "value": 310 },
+    { "stage": "Qualified", "deals": 25, "value": 220 },
+    { "stage": "Proposal", "deals": 12, "value": 150 },
+    { "stage": "Won", "deals": 7, "value": 96 }
+  ]
+}
+
+### AG-UI run (server tools only — no frontend tools sent)
+POST {{base}}/agui
+Content-Type: application/json
+Accept: text/event-stream
+
+{
+  "threadId": "t1",
+  "runId": "r1",
+  "state": {},
+  "messages": [{ "id": "m1", "role": "user", "content": "Which datasets do you have?" }],
+  "tools": [],
+  "context": [],
+  "forwardedProps": {}
+}
+
+### AG-UI run with a frontend tool (expect TOOL_CALL_* events for renderKpis)
+POST {{base}}/agui
+Content-Type: application/json
+Accept: text/event-stream
+
+{
+  "threadId": "t2",
+  "runId": "r2",
+  "state": {},
+  "messages": [{ "id": "m1", "role": "user", "content": "Show the hours the team logged this month as a KPI" }],
+  "tools": [{
+    "name": "renderKpis",
+    "description": "Add a row of KPI cards to the report",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "items": { "type": "array", "items": { "type": "object", "properties": { "label": { "type": "string" }, "value": { "type": "string" } }, "required": ["label", "value"] } }
+      },
+      "required": ["items"]
+    }
+  }],
+  "context": [],
+  "forwardedProps": {}
+}
+
+### Team Time: re-read Tempo and Jira into the snapshot (about 20 s)
+POST {{base}}/team-time/sync
+Authorization: Bearer {{writeApiKey}}
+Content-Type: application/json
+
+{}
+
+### Team Time: the snapshot the page reads
+GET {{base}}/team-time/data
+
+### Agile tools over MCP (what Claude calls through the gateway)
+POST {{base}}/mcp
+Content-Type: application/json
+
+{ "jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": { "name": "getSprintBurndown", "arguments": { "sprint": "previous" } } }
+
+###
+POST {{base}}/mcp
+Content-Type: application/json
+
+{ "jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": { "name": "getTicketStats", "arguments": { "issueType": "Bug", "groupBy": "status", "splitBy": "priority" } } }

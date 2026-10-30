@@ -1,0 +1,4 @@
+package:
+  imageName: team-hours-report
+  imageIndexFilePath: ./build/index.js
+  outputFolder: ./deploy

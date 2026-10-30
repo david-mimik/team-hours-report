@@ -1,0 +1,7 @@
+node_modules/
+web/dist/
+mim/build/
+mim/deploy/
+mim/test/.env
+.env
+.DS_Store
